@@ -2,7 +2,11 @@ package customer.model;
 
 import customer.persistence.CustomerPO;
 import customer.persistence.CustomerRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import javax.transaction.Transactional;
 import java.time.LocalDate;
@@ -19,6 +23,20 @@ public class CustomerService {
     private final LocalDate birthDate = java.time.LocalDate.now();
     private final String civilStatus = "ledig";
     private final String email = "aniel@burki.ch";
+
+    @Value("${WM_ADDRESS_SERVICE_HOST}")
+    private String wmAddressHost;
+
+    @Value("${WM_ADDRESS_SERVICE_PORT}")
+    private String wmAddressPort;
+
+    @Bean
+    RestTemplate restTemplate(){
+        return new RestTemplate();
+    }
+
+    @Autowired
+    RestTemplate restTemplate;
 
     public CustomerService(CustomerRepository customerRepository) {
         this.customerRepository = customerRepository;
@@ -57,6 +75,12 @@ public class CustomerService {
             customerPO.setEmail(email);
             customerRepository.save(customerPO);
         }
-        return new Customer(customerPO.getId(), customerPO.getFirstName(), customerPO.getLastName(), customerPO.getBirthDate(), customerPO.getCivilStatus(), customerPO.getEmail() );
+
+        String addressUrl = "http://" + wmAddressHost + ":" + wmAddressPort + "/addresses?key=aa";
+
+        Address address = restTemplate.getForObject(
+                addressUrl, Address.class);
+
+        return new Customer(customerPO.getId(), customerPO.getFirstName(), customerPO.getLastName() + ", " + address.getPlace(), customerPO.getBirthDate(), customerPO.getCivilStatus(), customerPO.getEmail() );
     }
 }
