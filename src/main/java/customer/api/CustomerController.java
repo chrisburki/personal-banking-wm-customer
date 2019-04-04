@@ -52,4 +52,10 @@ public class CustomerController {
     public Customer findCustomer2(@RequestParam("search") String search) {
         return new Customer(counter.incrementAndGet(),"AAA","BBBB",null,null,null);
     }
+
+    @RequestMapping(value="/ready", method = RequestMethod.GET)
+    public Customer readyCustomer() {
+        return new Customer(counter.incrementAndGet(),"Ready","Ready",null,null,null);
+    }
+
 }
